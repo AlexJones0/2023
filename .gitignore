@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Hide Advent of code data (actually do this properly!? wow)
+**/data.txt
