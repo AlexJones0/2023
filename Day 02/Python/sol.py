@@ -7,6 +7,7 @@ NOT_IMPLEMENTED = "Not Yet Implemented"
 data = [x.strip() for x in open("Day 02/data.txt", "r").read().split("\n") if len(x.strip()) > 0]
 
 from functools import reduce
+from collections import defaultdict
 
 
 targetCubeAmounts = {
@@ -21,7 +22,7 @@ def getGameId(line: str) -> int:
 
 
 def getGameData(line: str) -> dict[str,int]:
-    gameData = dict()
+    gameData = defaultdict(int)
     for reveal in line.split(":")[1].split(";"):
         # Assume cubes of the same colour do not appear in the same reveal; this assumption holds for the input data
         # but if not true, we would need to track local amounts per reveal and update the max based on this.
@@ -32,8 +33,7 @@ def getGameData(line: str) -> dict[str,int]:
             cubeInfo = cubeStr.split(" ")
             amount = int(cubeInfo[0])
             colour = cubeInfo[1].lower()
-            prevAmount = gameData[colour] if colour in gameData else -1
-            gameData[colour] = max(prevAmount, amount)
+            gameData[colour] = max(gameData[colour], amount)
     return gameData
 
 
