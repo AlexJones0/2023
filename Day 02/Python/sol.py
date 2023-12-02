@@ -13,7 +13,7 @@ data = [x.strip() for x in open("Day 02/data.txt", "r").read().split("\n") if le
 # For part 2 we assume that only red, green and blue cubes are included in each game; which holds for the given data set.
 
 
-from functools import reduce
+from math import prod
 from collections import defaultdict
 
 
@@ -35,7 +35,7 @@ def isGamePossible(gameData: defaultdict[str,int], targets: dict[str,int]) -> bo
 
 
 def getGamePower(line: str) -> int:
-    return reduce(lambda x,y: (x*y), getGameData(line).values(), 1)
+    return prod(getGameData(line).values())
 
 
 targetCubeAmounts = {"blue": 14, "red": 12, "green": 13}
