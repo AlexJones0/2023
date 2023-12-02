@@ -6,47 +6,45 @@ Desc: Solution to day 2 problems (3 & 4) for Advent of Code 2023, solved in Pyth
 NOT_IMPLEMENTED = "Not Yet Implemented"
 data = [x.strip() for x in open("Day 02/data.txt", "r").read().split("\n") if len(x.strip()) > 0]
 
+from functools import reduce
 
-CUBE_NUMS = {
+
+targetCubeAmounts = {
     "blue": 14,
     "red": 12,
     "green": 13
 }
 
-possible = []
-gameInfo = {}
-for line in data:
-    line = line.split(":")
-    gameId = int(line[0].split(" ")[-1])
-    gameInfo[gameId] = {}
-    reveals = line[1].split(";")
-    for reveal in reveals:
-        cubes = reveal.split(", ")
-        for cube in cubes:
-            if len(cube.strip()) == 0:
+
+def getGameId(line: str) -> int:
+    return int(line.split(":")[0].split(" ")[-1])
+
+
+def getGameData(line: str) -> dict[str,int]:
+    gameData = dict()
+    for reveal in line.split(":")[1].split(";"):
+        # Assume cubes of the same colour do not appear in the same reveal; this assumption holds for the input data
+        # but if not true, we would need to track local amounts per reveal and update the max based on this.
+        for cubeStr in reveal.split(", "):
+            cubeStr = cubeStr.strip()
+            if len(cubeStr) == 0:
                 continue
-            cube = cube.strip().split(" ")
-            num = int(cube[0])
-            colour = cube[1].lower().strip()
-            if colour in gameInfo[gameId]:
-                gameInfo[gameId][colour] = max(gameInfo[gameId][colour], num)
-            else:
-                gameInfo[gameId][colour] = num
-    isPossible = True
-    for colour, amount in gameInfo[gameId].items():
-        if colour not in CUBE_NUMS or CUBE_NUMS[colour] < amount:
-            isPossible = False
-            break
-    if isPossible:
-        possible.append(gameId)
+            cubeInfo = cubeStr.split(" ")
+            amount = int(cubeInfo[0])
+            colour = cubeInfo[1].lower()
+            prevAmount = gameData[colour] if colour in gameData else -1
+            gameData[colour] = max(prevAmount, amount)
+    return gameData
 
-print("Problem 3:", sum(possible))
 
-cumulativePower = 0
-for gameId in gameInfo.keys():
-    power = 1
-    for amount in gameInfo[gameId].values():
-        power *= amount
-    cumulativePower += power
+def isGamePossible(gameData: dict[str,int], targets: dict[str,int]) -> bool:
+    for colour, amount in gameData.items():
+        if colour not in targets or targets[colour] < amount:
+            return False
+    return True
 
-print("Problem 4:", cumulativePower)
+
+print("Problem 3:", sum([getGameId(line) for line in data if isGamePossible(getGameData(line), targetCubeAmounts)]))
+
+# For this we make an assumption that only red green and blue cubes are incldued in the set; this holds for the data
+print("Problem 4:", sum([reduce(lambda x,y: (x*y), getGameData(line).values(), 1) for line in data]))
