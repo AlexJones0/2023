@@ -46,5 +46,5 @@ def isGamePossible(gameData: dict[str,int], targets: dict[str,int]) -> bool:
 
 print("Problem 3:", sum([getGameId(line) for line in data if isGamePossible(getGameData(line), targetCubeAmounts)]))
 
-# For this we make an assumption that only red green and blue cubes are incldued in the set; this holds for the data
+# For this we make an assumption that only red green and blue cubes are included in the set; this holds for the data
 print("Problem 4:", sum([reduce(lambda x,y: (x*y), getGameData(line).values(), 1) for line in data]))
