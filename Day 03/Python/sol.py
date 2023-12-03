@@ -6,62 +6,59 @@ Desc: Solution to day 3 problems (5 & 6) for Advent of Code 2023, solved in Pyth
 NOT_IMPLEMENTED = "Not Yet Implemented"
 data = [x.strip() for x in open("Day 03/data.txt", "r").read().split("\n") if len(x.strip()) > 0]
 
-symbols = set([
-    (i, j) for i, line in enumerate(data) for j, char in enumerate(line) if not (char.isdigit() or char == ".")
-])
 
-neighbours = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
+# Problem 5 approach - iterate through data to find numbers, marking each number adjacent by checking neighbour
+# cells for symbols while parsing. When finished parsing the number, record if next to some symbol. Sum these.
+
+neighbours = lambda posY, posX: [(posY+y,posX+x) for x in [-1,0,1] for y in [-1,0,1] if x != y or x != 0]
+inBounds = lambda posY, posX: 0 <= posY < len(data) and 0 <= posX < len(data[posY])
+isSymbol = lambda posY, posX: not data[posY][posX].isdigit() and data[posY][posX] != "."
 
 total = 0
 for i, line in enumerate(data):
-    num = 0
+    num = ""
     isAdjacent = False
     for j, char in enumerate(line):
         if char.isdigit():
-            num = num * 10 + int(char)
-            if not isAdjacent:
-                for posI, posJ in neighbours:
-                    if (i + posI, j + posJ) in symbols:
-                        isAdjacent = True
-                        break
-        else:
-            if isAdjacent and num != 0:
-                total += num
-            num = 0
+            num += char
+            for pos in neighbours(i, j):
+                if inBounds(*pos) and isSymbol(*pos):
+                    isAdjacent = True
+        elif num != "":
+            if isAdjacent:
+                total += int(num)
+            num = ""
             isAdjacent = False
-    if isAdjacent and num != 0:
-        total += num
+    if isAdjacent and num != "":
+        total += int(num)
 print("Problem 5:", total)
 
-gears = {
+
+# Problem 6 approach - maintain a dict of gears, acting as a set of positions at first. Iterate through data to find
+# numbers, and for each number parsed maintain a set of all gears the number is adjacent to by checking neighbours
+# again. When finished parsing the number, record the number as next to each gear. Sum the gear ratio of all gears with
+# exactly two adjacent numbers, no more and no less.
+
+maybeGearNumbers = {
     (i, j): [] for i, line in enumerate(data) for j, char in enumerate(line) if char == "*"
 }
 
 for i, line in enumerate(data):
-    num = 0
+    num = ""
     adjacentGears = set()
     for j, char in enumerate(line):
         if char.isdigit():
-            num = num * 10 + int(char)
-            for posI, posJ in neighbours:
-                pos = (i + posI, j + posJ)
-                if pos in gears:
+            num += char
+            for pos in neighbours(i, j):
+                if pos in maybeGearNumbers:
                     adjacentGears.add(pos)
-                    break
-        else:
-            if num != 0:
-                for gear in adjacentGears:
-                    gears[gear].append(num)
-                adjacentGears = set()
-            num = 0
-    if num != 0:
+        elif num != "":
+            for gear in adjacentGears:
+                maybeGearNumbers[gear].append(num)
+            adjacentGears = set()
+            num = ""
+    if num != "":
         for gear in adjacentGears:
-            gears[gear].append(num)
-            
+            maybeGearNumbers[gear].append(num)
 
-total = 0
-for gear, nums in gears.items():
-    if len(nums) != 2:
-        continue
-    total += nums[0] * nums[1]
-print("Problem 6:", total)
+print("Problem 6:", sum(int(ns[0]) * int(ns[1]) for ns in maybeGearNumbers.values() if len(ns) == 2))
