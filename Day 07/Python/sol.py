@@ -9,112 +9,61 @@ data = open("Day 07/data.txt", "r").read().strip().split("\n")
 from functools import cmp_to_key
 from collections import Counter
 
-def get_type(counter):
-    if len(counter) == 1:
-        return 6
-    elif len(counter) == 2 and 1 in counter.values():
-        return 5
-    elif len(counter) == 2 and 2 in counter.values():
-        return 4
-    elif len(counter) == 3 and 3 in counter.values():
-        return 3
-    elif len(counter) == 3 and len([x for x in counter.values() if x == 2]) == 2:
-        return 2
-    elif len(counter) == 4:
-        return 1
-    return 0
+def getHandType(hand: str) -> int:
+    # Given a hand (e.g. 23JJK), determine the "type" of the hand, where stronger types are assigned higher numbers.
+    cardCounts = tuple(sorted(Counter(hand).values()))
+    typeValue = {
+        (5,): 6,
+        (1, 4): 5,
+        (2, 3): 4,
+        (1, 1, 3): 3,
+        (1, 2, 2): 2,
+        (1, 1, 1, 2): 1,
+        (1, 1, 1, 1, 1): 0
+    }
+    return typeValue[cardCounts]
 
-def get_card_value(card):
-    if card in [str(i) for i in range(2,10)]:
-        return int(card)
-    elif card == "T":
-        return 10
-    elif card == "J":
-        return 11
-    elif card == "Q":
-        return 12
-    elif card == "K":
-        return 13
-    elif card == "A":
-        return 14
+def getCardValue(card: str) -> int:
+    # Given a card (e.g. "Q"), determine the "value" of the card, where stronger cards are assigned higher numbers.
+    return {c: i for i, c in enumerate("23456789TJQKA")}[card]
 
-def compare(item1, item2):
-    hand1 = item1.split()[0]
-    hand2 = item2.split()[0]
-    h1counts = Counter(hand1)
-    h2counts = Counter(hand2)
-    h1type = get_type(h1counts)
-    h2type = get_type(h2counts)
-    if h1type != h2type:
-        return 1 if h1type > h2type else -1
+def compare(item1: str, item2: str) -> int:
+    # Compare two hand strings (including hands and bids, e.g. "3958K 683") based on appropriate hand ordering rules.
+    hand1, hand2 = item1.split()[0], item2.split()[0]
+    hand1Type, hand2Type = getHandType(hand1), getHandType(hand2)
+    if hand1Type != hand2Type:
+        return 1 if hand1Type > hand2Type else -1
     for card1, card2 in zip(hand1, hand2):
         if card1 == card2:
             continue
-        return 1 if get_card_value(card1) > get_card_value(card2) else -1
+        return 1 if getCardValue(card1) > getCardValue(card2) else -1
     return 0
 
 hands = sorted(data, key=cmp_to_key(compare))
+print("Problem 13:", sum([rank * int(handBid.split()[1]) for rank, handBid in enumerate(hands, start=1)]))
 
-print("Problem 13:", sum([rank * int(hand.split()[1]) for rank, hand in list(enumerate([0] + hands))[1:]]))
+def getCardValueWithJoker(card: str) -> int:
+    # Get the card value where "J" is now a joker with the weakest value.
+    return {c: i for i, c in enumerate("J23456789TQKA")}[card]
 
-def get_type2(counter):
-    counterVals = {c: v for c, v in counter.items() if v != 0}
-    if len(counterVals) == 1:
-        cardval = 6
-    elif len(counterVals) == 2 and 1 in counterVals.values():
-        cardval = 5
-    elif len(counterVals) == 2 and 2 in counterVals.values():
-        cardval = 4
-    elif len(counterVals) == 3 and 3 in counterVals.values():
-        cardval = 3
-    elif len(counterVals) == 3 and len([x for x in counterVals.values() if x == 2]) == 2:
-        cardval = 2
-    elif len(counterVals) == 4:
-        cardval = 1
-    else:
-        cardval =  0
-    if counter["J"] == 0:
-        return cardval
-    maxval = cardval
-    counter["J"] -= 1
-    for card in counter:
-        if card == "J":
-            continue
-        counter[card] += 1
-        maxval = max(maxval, get_type2(counter))
-        counter[card] -= 1
-    counter["J"] += 1
-    return maxval
+def bestJokerHand(hand: str) -> str:
+    # Given a hand (e.g. 23JJK), determine (one of) the strongest possible hand(s) that could be made by substituting jokers.
+    if all(c == "J" for c in hand):
+        return hand
+    cardCounts = Counter(hand)
+    return hand.replace("J", max(cardCounts.keys(), key=lambda k: cardCounts[k] if k != "J" else -1))
 
-def get_card_value2(card):
-    if card in [str(i) for i in range(2,10)]:
-        return int(card)
-    elif card == "T":
-        return 10
-    elif card == "J":
-        return 1
-    elif card == "Q":
-        return 12
-    elif card == "K":
-        return 13
-    elif card == "A":
-        return 14
-
-def compare2(item1, item2):
-    hand1 = item1.split()[0]
-    hand2 = item2.split()[0]
-    h1counts = Counter(hand1)
-    h2counts = Counter(hand2)
-    h1type = get_type2(h1counts)
-    h2type = get_type2(h2counts)
-    if h1type != h2type:
-        return 1 if h1type > h2type else -1
+def compareWithJoker(item1: str, item2: str) -> int:
+    # Compare two hand strings (including hand and bids, e.g. "3958K 683") based on hand ordering rules, accounting for jokers.
+    hand1, hand2 = item1.split()[0], item2.split()[0]
+    hand1Type, hand2Type = getHandType(bestJokerHand(hand1)), getHandType(bestJokerHand(hand2))
+    if hand1Type != hand2Type:
+        return 1 if hand1Type > hand2Type else -1
     for card1, card2 in zip(hand1, hand2):
         if card1 == card2:
             continue
-        return 1 if get_card_value2(card1) > get_card_value2(card2) else -1
+        return 1 if getCardValueWithJoker(card1) > getCardValueWithJoker(card2) else -1
     return 0
 
-hands = sorted(data, key=cmp_to_key(compare2))
-
-print("Problem 14:", sum([rank * int(hand.split()[1]) for rank, hand in list(enumerate([0] + hands))[1:]]))
+hands = sorted(data, key=cmp_to_key(compareWithJoker))
+print("Problem 14:", sum([rank * int(handBid.split()[1]) for rank, handBid in enumerate(hands, start=1)]))
