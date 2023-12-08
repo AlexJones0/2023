@@ -4,33 +4,38 @@ Author: Alex Jones
 Desc: Solution to day 8 problems (15 & 16) for Advent of Code 2023, solved in Python 3.
 """
 NOT_IMPLEMENTED = "Not Yet Implemented"
-data = open("Day 08/data.txt", "r").read().strip().split("\n")
+data = [line.split(" = ") for line in open("Day 08/data.txt", "r").read().strip().split("\n")]
 
 from math import lcm
 
-dirs = data[0]
-edges = {node: tuple([n for n in edge[1:-1].split(", ")]) for node, edge in [(line.split("=")[0].strip(), line.split("=")[1].strip()) for line in data[2:]]}
+# Part 1 approach - represent the input as a list of directions and an adjacency list representation of a graph,
+# simulate the steps taken until the end is found and output the counted steps.
 
-node = "AAA"
-steps = 0
+instrs = data[0][0]
+edges = {node.strip(): edges[1:-1].split(", ") for node, edges in data[2:]}
+
+node, steps = "AAA", 0
 while node != "ZZZ":
-    index = 0 if dirs[steps % len(dirs)] == "L" else 1
+    index = instrs[steps % len(instrs)] == "R"
     node = edges[node][index]
     steps += 1
-
 print("Problem 15:", steps)
 
-nodes = [node for node in edges.keys() if node.endswith("A")]
-encountered = {}
-steps = 0
-while len(encountered) != len(nodes):
-    index = 0 if dirs[steps % len(dirs)] == "L" else 1
-    for i, node in enumerate(nodes):
-        if node.endswith("Z"):
-            if i not in encountered:
-                encountered[i] = steps
-            continue
-        nodes[i] = edges[node][index]
-    steps += 1
+# Part 2 approach - based on the fact that the problem description means that each start node must eventually
+# hit some cycle involving the end node, we can simply find the number of steps required to hit the end
+# node for each input, and then apply Chinese Remainder Theorem. In this case it turns out that
+# cycles regularly occur such that each cycle hits Z at some multiple of a cycle length, meaning that
+# the problem reduces to just taking the Lowest Common Multiple (LCM) of the steps at which end nodes are encountered.
 
-print("Problem 16:", lcm(*[encountered[i] for i in range(len(nodes))]))
+
+nodes = [node for node in edges.keys() if node.endswith("A")]
+steps, counts = 0, []
+while nodes:
+    index = instrs[steps % len(instrs)] == "R"
+    for i, node in enumerate(nodes):
+        nodes[i] = edges[node][index]
+        if nodes[i].endswith("Z"):
+            counts.append(steps+1)
+    nodes = [node for node in nodes if not node.endswith("Z")]
+    steps += 1
+print("Problem 16:", lcm(*counts))
