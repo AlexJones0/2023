@@ -4,10 +4,10 @@ Author: Alex Jones
 Desc: Solution to day 3 problems (5 & 6) for Advent of Code 2023, solved in Python 3.
 """
 NOT_IMPLEMENTED = "Not Yet Implemented"
-data = [x.strip() for x in open("Day 03/data.txt", "r").read().split("\n") if len(x.strip()) > 0]
+data = open("Day 03/data.txt", "r").read().strip().split("\n")
 
 
-# Problem 5 approach - iterate through data to find numbers, marking each number adjacent by checking neighbour
+# Part 1 approach - iterate through data to find numbers, marking each number adjacent by checking neighbour
 # cells for symbols while parsing. When finished parsing the number, record if next to some symbol. Sum these.
 
 neighbours = lambda posY, posX: [(posY+y,posX+x) for x in [-1,0,1] for y in [-1,0,1] if x != y or x != 0]
@@ -21,9 +21,7 @@ for i, line in enumerate(data):
     for j, char in enumerate(line):
         if char.isdigit():
             num += char
-            for pos in neighbours(i, j):
-                if inBounds(*pos) and isSymbol(*pos):
-                    isAdjacent = True
+            isAdjacent |= any(inBounds(*pos) and isSymbol(*pos) for pos in neighbours(i, j))
         elif num != "":
             if isAdjacent:
                 total += int(num)
@@ -39,9 +37,7 @@ print("Problem 5:", total)
 # again. When finished parsing the number, record the number as next to each gear. Sum the gear ratio of all gears with
 # exactly two adjacent numbers, no more and no less.
 
-maybeGearNumbers = {
-    (i, j): [] for i, line in enumerate(data) for j, char in enumerate(line) if char == "*"
-}
+gearNums = {(i,j): [] for i, line in enumerate(data) for j, char in enumerate(line) if char == "*"}
 
 for i, line in enumerate(data):
     num = ""
@@ -49,16 +45,14 @@ for i, line in enumerate(data):
     for j, char in enumerate(line):
         if char.isdigit():
             num += char
-            for pos in neighbours(i, j):
-                if pos in maybeGearNumbers:
-                    adjacentGears.add(pos)
+            adjacentGears.update([pos for pos in neighbours(i, j) if pos in gearNums])
         elif num != "":
             for gear in adjacentGears:
-                maybeGearNumbers[gear].append(num)
+                gearNums[gear].append(num)
             adjacentGears = set()
             num = ""
     if num != "":
         for gear in adjacentGears:
-            maybeGearNumbers[gear].append(num)
+            gearNums[gear].append(num)
 
-print("Problem 6:", sum(int(ns[0]) * int(ns[1]) for ns in maybeGearNumbers.values() if len(ns) == 2))
+print("Problem 6:", sum(int(ns[0]) * int(ns[1]) for ns in gearNums.values() if len(ns) == 2))
