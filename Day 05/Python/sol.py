@@ -11,11 +11,8 @@ Comments: I ran into so many issues on part 1 because of a bug in my boilerplate
 NOT_IMPLEMENTED = "Not Yet Implemented"
 data = open("Day 05/data.txt", "r").readlines()
 
-
 # Problem 1 approach: simulate all seeds, iterating through each map and calculating new mappings each time
-
-# Parse seed and map information out of input
-seeds = [int(n) for n in data[0].split(":")[1].split()]
+seeds = [int(n) for n in data[0][7:].split()]
 maps = [mapStr.split("\n")[1:] for mapStr in "".join(data[2:]).split("\n\n")]
 maps = [[tuple(int(n) for n in line.split()) for line in mapLines] for mapLines in maps]
 
@@ -24,9 +21,8 @@ for valMap in maps:
     for i, val in enumerate(values):
         for (destStart, srcStart, rangeLen) in valMap:
             if srcStart <= val < (srcStart + rangeLen):
-                values[i] = destStart + (val - srcStart)
+                values[i] = destStart + val - srcStart
                 break
-
 print("Problem 9:", min(values))
 
 
@@ -34,7 +30,6 @@ print("Problem 9:", min(values))
 # If an interval is entirely mapped within some range, perform the mapping.
 # If an interval is split across multiple mapping ranges, map the part of the interval within the range and create a new interval for the remainder
 # (to be mapped later on in this mapping iteration).
-
 intervals = list(zip(seeds[0::2], seeds[1::2]))
 for valMap in maps:
     for i, (valStart, valRange) in enumerate(intervals):
@@ -42,10 +37,9 @@ for valMap in maps:
             srcEnd = srcStart + rangeLen - 1
             if srcStart <= valStart <= srcEnd:
                 if (valStart + valRange - 1) <= srcEnd:
-                    intervals[i] = (destStart + (valStart - srcStart), valRange)
+                    intervals[i] = (destStart + valStart - srcStart, valRange)
                 else:
-                    intervals[i] = (destStart + (valStart - srcStart), srcEnd - valStart + 1)
+                    intervals[i] = (destStart + valStart - srcStart, srcEnd - valStart + 1)
                     intervals.append((srcEnd + 1, valRange - srcEnd + valStart - 1))
                 break
-
 print("Problem 10:", min(intervals)[0])
