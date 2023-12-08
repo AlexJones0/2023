@@ -10,9 +10,8 @@ from math import lcm
 
 # Part 1 approach - represent the input as a list of directions and an adjacency list representation of a graph,
 # simulate the steps taken until the end is found and output the counted steps.
-
 instrs = data[0][0]
-edges = {node.strip(): edges[1:-1].split(", ") for node, edges in data[2:]}
+edges = {node: edges[1:-1].split(", ") for node, edges in data[2:]}
 
 node, steps = "AAA", 0
 while node != "ZZZ":
@@ -26,8 +25,6 @@ print("Problem 15:", steps)
 # node for each input, and then apply Chinese Remainder Theorem. In this case it turns out that
 # cycles regularly occur such that each cycle hits Z at some multiple of a cycle length, meaning that
 # the problem reduces to just taking the Lowest Common Multiple (LCM) of the steps at which end nodes are encountered.
-
-
 nodes = [node for node in edges.keys() if node.endswith("A")]
 steps, counts = 0, []
 while nodes:
