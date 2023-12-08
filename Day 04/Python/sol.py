@@ -5,7 +5,7 @@ Desc: Solution to day 4 problems (7 & 8) for Advent of Code 2023, solved in Pyth
 Rank: 252/110
 """
 NOT_IMPLEMENTED = "Not Yet Implemented"
-data = [x.line.split(":")[1].split("|") for x in open("Day 04/data.txt", "r").read().strip().split("\n")]
+data = [x.split(":")[1].split("|") for x in open("Day 04/data.txt", "r").read().strip().split("\n")]
 
 
 # Problem 7 approach: parse line into a set of winning numbers and our numbers, perform set intersection,
