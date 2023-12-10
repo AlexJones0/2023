@@ -37,25 +37,15 @@ while pos != start or len(cycle) == 1:
 print("Problem 19:", len(cycle) // 2)
 
 inside = 0
-out = ""
 last = None
 for i, line in enumerate(data):
     inLoop = False
     for j, char in enumerate(line):
         if (i, j) in cycle and char in "|JL" or char == "S":  # AND S behaves like J or L (which it does for my input) - need to figure out how to implement this rather than hard coding
-            out += char
             inLoop = not inLoop
             continue
         if (i, j) in cycle or not inLoop:
-            out += char
-            if char == "F" or char == "L":
-                last = char
-            elif char != "-":
-                last = None
             continue
         inside += 1
-        out += "@"
-    out += "\n"
-print(out)
 
 print("Problem 20:", inside)
