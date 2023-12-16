@@ -8,45 +8,22 @@ data = open("Day 16/data.txt", "r").read().strip().splitlines()
 
 def simulateEnergized(startPos: tuple[int,int], startDirection: tuple[int,int]) -> int:
     beams = [(startPos, startDirection)]
-    energized = [[False] * len(data[0]) for _ in range(len(data))]
-    prevSeen = set()
+    seen = set()
     while beams:
-        newBeams = []
-        for i, (beamPos, beamDirection) in enumerate(beams):
-            nextPos = (beamPos[0]+beamDirection[0], beamPos[1]+beamDirection[1])
-            if (beamPos, beamDirection) in prevSeen:
-                beams[i] = None
-                continue
-            prevSeen.add((beamPos, beamDirection))
-            if 0 <= nextPos[0] < len(data) and 0 <= nextPos[1] < len(data[0]):
-                energized[nextPos[0]][nextPos[1]] = True
-                nextSymbol = data[nextPos[0]][nextPos[1]]
-            else:
-                beams[i] = None
-                continue
-            if nextSymbol == '.':
-                beams[i] = (nextPos, beamDirection)
-            elif nextSymbol == '/':
-                beamDirection = {(0,1):(-1,0), (-1,0):(0,1), (0,-1):(1,0), (1,0):(0,-1)}[beamDirection]
-                beams[i] = (nextPos, beamDirection)
-            elif nextSymbol == '\\':
-                beamDirection = {(0,1):(1,0), (1,0):(0,1), (0,-1):(-1,0), (-1,0):(0,-1)}[beamDirection]
-                beams[i] = (nextPos, beamDirection)
-            elif nextSymbol == '|':
-                if beamDirection[1] == 0:
-                    beams[i] = (nextPos, beamDirection)
-                else:
-                    beams[i] = (nextPos, (-1,0))
-                    newBeams.append((nextPos, (1,0)))
-            elif nextSymbol == '-':
-                if beamDirection[0] == 0:
-                    beams[i] = (nextPos, beamDirection)
-                else:
-                    beams[i] = (nextPos, (0,-1))
-                    newBeams.append((nextPos, (0,1)))
-        beams += newBeams
-        beams = [b for b in beams if b is not None]
-    return len([1 for row in energized for state in row if state])
+        beamPos, beamDirection = beams.pop()
+        if (beamPos, beamDirection) in seen:
+            continue
+        nextPos = (beamPos[0] + beamDirection[0], beamPos[1] + beamDirection[1])
+        seen.add((beamPos, beamDirection))
+        if not(0 <= nextPos[0] < len(data) and 0 <= nextPos[1] < len(data[0])):
+            continue
+        match data[nextPos[0]][nextPos[1]]:
+            case  '.': beams.append((nextPos, beamDirection))
+            case  '/': beams.append((nextPos, (-beamDirection[1], -beamDirection[0])))
+            case '\\': beams.append((nextPos, (beamDirection[1], beamDirection[0])))
+            case  '|': beams += [(nextPos, (-1,0)), (nextPos, (1,0))]
+            case  '-': beams += [(nextPos, (0,-1)), (nextPos, (0,1))]
+    return len(set(pos for (pos, _) in seen)) - 1
 
 print("Problem 31:", simulateEnergized((0,-1), (0,1)))
 
