@@ -14,7 +14,7 @@ falling = {brickID: [(i,j,k) for i in range(start[0], end[0]+1)
 
 # Simulate bricks falling until all bricks are at rest, create a bidirectional map describing supporting / supported by relationships
 brickCubes, supporting, supportedBy = {}, {i: set() for i in range(len(data))}, {i: set() for i in range(len(data))}
-while falling:
+while falling:  # Process still-falling bricks in order of ascending height (z)
     for brickID, positions in sorted(falling.items(), key=lambda pair: max(z for (_,_,z) in pair[1])):
         onGround = any(z <= 1 for (_,_,z) in positions)
         nextPositions = [(x,y,z-1) for (x,y,z) in positions]
