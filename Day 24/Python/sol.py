@@ -55,11 +55,10 @@ print("Problem 47:", result)
 import z3
 (px, py, pz, vx, vy, vz) = [z3.Real(var) for var in ("px", "py", "pz", "vx", "vy", "vz")]
 solver = z3.Solver()
-for i, ((hpx, hpy, hpz), (hvx, hvy, hvz)) in enumerate(data):
+for i, hailInfo in enumerate(data):
     t = z3.Real(f't{i}')
-    solver.add(px + vx * t == hpx + hvx * t)
-    solver.add(py + vy * t == hpy + hvy * t)
-    solver.add(pz + vz * t == hpz + hvz * t)
+    for p, v, hp, hv in zip((px,py,pz),(vx,vy,vz), *hailInfo):
+        solver.add(p + v * t == hp + hv * t)
     solver.add(t >= 0)
 assert solver.check() == z3.sat
 model = solver.model()
